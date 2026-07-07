@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
+import { PARTICLE_DATA_B64, SOURCE_ASPECT } from "./particleData.js";
+import tulipSourceImg from "./tulip-source.jpg";
 
 /**
  * ParticleTulipHero
- * Full-screen hero: a tulip rendered as thousands of white light particles on black.
- * The subject (petals, stem, leaves) is drawn procedurally onto an offscreen source
- * canvas with internal light/shadow shading; particles are sampled from that source
- * weighted by brightness and edge strength, so density naturally traces the shape
- * and falls off into black (which doubles as the "no background" mask).
+ * Full-screen hero: the source tulip photograph rendered as thousands of white
+ * light particles on black. Particle positions and brightness were sampled
+ * offline directly from the photo's pixels (petal color/edges plus a masked
+ * corridor for the stem), so the shape traces the real photo rather than a
+ * drawn approximation. The particle data ships baked into particleData.js —
+ * no image asset is fetched at runtime.
  *
  * Drop this in as <ParticleTulipHero /> — it fills its nearest positioned ancestor,
  * or the viewport if used at the page root.
@@ -25,187 +28,39 @@ export default function ParticleTulipHero() {
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // ---------- 1. Draw the tulip subject onto an offscreen source canvas ----------
-    // Everything outside the flower/stem/leaves stays pure black, so brightness
-    // thresholding alone is enough to discard the background.
-    const SRC = 1000;
-
-    function buildSource() {
-      const off = document.createElement("canvas");
-      off.width = SRC;
-      off.height = SRC;
-      const o = off.getContext("2d");
-      o.fillStyle = "#000";
-      o.fillRect(0, 0, SRC, SRC);
-
-      const cx = 500;
-      function petalPath() {
-        o.beginPath();
-        o.moveTo(cx, 565);
-        o.bezierCurveTo(cx - 130, 560, cx - 205, 470, cx - 195, 400);
-        o.bezierCurveTo(cx - 190, 330, cx - 230, 300, cx - 205, 250);
-        o.bezierCurveTo(cx - 185, 275, cx - 140, 300, cx - 108, 300);
-        o.bezierCurveTo(cx - 95, 340, cx - 55, 345, cx - 20, 350);
-        o.bezierCurveTo(cx - 10, 280, cx - 35, 235, cx - 6, 178);
-        o.bezierCurveTo(cx + 20, 235, cx + 6, 285, cx + 18, 350);
-        o.bezierCurveTo(cx + 55, 345, cx + 95, 340, cx + 108, 300);
-        o.bezierCurveTo(cx + 142, 300, cx + 186, 274, cx + 206, 250);
-        o.bezierCurveTo(cx + 231, 300, cx + 191, 330, cx + 196, 400);
-        o.bezierCurveTo(cx + 206, 470, cx + 131, 560, cx, 565);
-        o.closePath();
-      }
-
-      // base color: dark maroon (shadow, left) -> hot red-orange (lit, right)
-      petalPath();
-      const baseGrad = o.createLinearGradient(cx - 210, 0, cx + 210, 0);
-      baseGrad.addColorStop(0, "#3a0710");
-      baseGrad.addColorStop(0.45, "#8f0f1c");
-      baseGrad.addColorStop(0.72, "#c81f2b");
-      baseGrad.addColorStop(1, "#ff5a3c");
-      o.fillStyle = baseGrad;
-      o.fill();
-
-      o.save();
-      petalPath();
-      o.clip();
-
-      // dark seam / shadow crease left-of-center
-      const seam = o.createRadialGradient(cx - 65, 380, 10, cx - 65, 380, 200);
-      seam.addColorStop(0, "rgba(15,2,4,0.65)");
-      seam.addColorStop(1, "rgba(15,2,4,0)");
-      o.fillStyle = seam;
-      o.fillRect(0, 0, SRC, SRC);
-
-      // lit highlight, upper right
-      const lit = o.createRadialGradient(cx + 90, 260, 10, cx + 90, 260, 190);
-      lit.addColorStop(0, "rgba(255,190,150,0.55)");
-      lit.addColorStop(1, "rgba(255,190,150,0)");
-      o.globalCompositeOperation = "lighter";
-      o.fillStyle = lit;
-      o.fillRect(0, 0, SRC, SRC);
-
-      // small hot rim highlight near the top edge
-      const hot = o.createRadialGradient(cx + 20, 205, 4, cx + 20, 205, 70);
-      hot.addColorStop(0, "rgba(255,255,255,0.55)");
-      hot.addColorStop(1, "rgba(255,255,255,0)");
-      o.fillStyle = hot;
-      o.fillRect(0, 0, SRC, SRC);
-      o.globalCompositeOperation = "source-over";
-
-      // lobe seams (vein lines) for extra edge detail
-      o.strokeStyle = "rgba(20,2,6,0.45)";
-      o.lineWidth = 7;
-      o.beginPath();
-      o.moveTo(cx - 108, 300);
-      o.quadraticCurveTo(cx - 60, 430, cx - 20, 560);
-      o.stroke();
-      o.beginPath();
-      o.moveTo(cx + 108, 300);
-      o.quadraticCurveTo(cx + 60, 430, cx + 20, 560);
-      o.stroke();
-
-      o.restore();
-
-      // outer rim light along the top-left silhouette
-      petalPath();
-      o.save();
-      o.clip();
-      o.strokeStyle = "rgba(255,220,210,0.35)";
-      o.lineWidth = 10;
-      o.beginPath();
-      o.moveTo(cx - 205, 250);
-      o.bezierCurveTo(cx - 140, 200, cx - 40, 190, cx - 6, 178);
-      o.stroke();
-      o.restore();
-
-      // ----- stem -----
-      const stemGrad = o.createLinearGradient(cx - 40, 0, cx + 40, 0);
-      stemGrad.addColorStop(0, "#1f2c10");
-      stemGrad.addColorStop(0.55, "#3f5c22");
-      stemGrad.addColorStop(1, "#7c9a46");
-      o.fillStyle = stemGrad;
-      o.beginPath();
-      o.moveTo(cx - 38, 555);
-      o.bezierCurveTo(cx - 34, 700, cx - 30, 850, cx - 22, 995);
-      o.lineTo(cx + 20, 995);
-      o.bezierCurveTo(cx + 28, 850, cx + 32, 700, cx + 38, 555);
-      o.closePath();
-      o.fill();
-
-      // ----- leaves -----
-      function leaf(x0, y0, cx1, cy1, x1, y1, cx2, cy2, flip) {
-        const g = o.createLinearGradient(x0, 0, x1, 0);
-        if (flip) {
-          g.addColorStop(0, "#7c9a46");
-          g.addColorStop(1, "#233414");
-        } else {
-          g.addColorStop(0, "#233414");
-          g.addColorStop(1, "#7c9a46");
-        }
-        o.fillStyle = g;
-        o.beginPath();
-        o.moveTo(x0, y0);
-        o.quadraticCurveTo(cx1, cy1, x1, y1);
-        o.quadraticCurveTo(cx2, cy2, x0, y0);
-        o.closePath();
-        o.fill();
-      }
-      leaf(cx - 30, 640, cx - 260, 760, cx - 300, 890, cx - 90, 760, false);
-      leaf(cx + 32, 690, cx + 280, 810, cx + 330, 930, cx + 95, 810, true);
-      leaf(cx - 10, 760, cx - 140, 950, cx - 160, 998, cx - 40, 940, false);
-
-      return o.getImageData(0, 0, SRC, SRC);
+    // ---------- 1. Decode the baked particle data ----------
+    function decodeParticles(b64) {
+      const bin = atob(b64);
+      const buf = new ArrayBuffer(bin.length);
+      const view = new Uint8Array(buf);
+      for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+      return new Float32Array(buf);
     }
 
-    const srcData = buildSource();
-    const srcPixels = srcData.data;
-
-    function luminanceAt(x, y) {
-      if (x < 0 || y < 0 || x >= SRC || y >= SRC) return 0;
-      const i = (y * SRC + x) * 4;
-      return (0.299 * srcPixels[i] + 0.587 * srcPixels[i + 1] + 0.114 * srcPixels[i + 2]) / 255;
-    }
-
-    // ---------- 2. Turn the source into a cloud of particles ----------
-    const STEP = 3;
+    const flat = decodeParticles(PARTICLE_DATA_B64);
     const particles = [];
-
-    for (let y = 0; y < SRC; y += STEP) {
-      for (let x = 0; x < SRC; x += STEP) {
-        const b = luminanceAt(x, y);
-        if (b < 0.03) continue;
-
-        const gx = luminanceAt(x + STEP, y) - luminanceAt(x - STEP, y);
-        const gy = luminanceAt(x, y + STEP) - luminanceAt(x, y - STEP);
-        const edge = Math.min(1, Math.sqrt(gx * gx + gy * gy) * 2.2);
-
-        const weight = b * 0.75 + edge * 0.6;
-        if (weight < 0.05) continue;
-
-        const chance = Math.min(1, weight * 1.15);
-        if (Math.random() > chance) continue;
-
-        particles.push({
-          bx: (x + (Math.random() - 0.5) * STEP) / SRC,
-          by: (y + (Math.random() - 0.5) * STEP) / SRC,
-          brightness: Math.min(1, b * 0.6 + edge * 0.8),
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.00025 + Math.random() * 0.0004,
-          ampX: 0.8 + Math.random() * 1.8,
-          ampY: 0.8 + Math.random() * 1.8,
-          x: 0,
-          y: 0,
-          vx: 0,
-          vy: 0,
-        });
-      }
+    for (let i = 0; i < flat.length; i += 3) {
+      particles.push({
+        bx: flat[i],
+        by: flat[i + 1],
+        brightness: flat[i + 2],
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.00025 + Math.random() * 0.0004,
+        ampX: 0.7 + Math.random() * 1.6,
+        ampY: 0.7 + Math.random() * 1.6,
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+      });
     }
 
-    // ---------- 3. Layout: fit the square source into the viewport ----------
+    // ---------- 2. Layout: fit the photo's aspect ratio into the viewport ----------
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let originX = 0;
     let originY = 0;
-    let scale = 1;
+    let dispW = 1;
+    let dispH = 1;
 
     function getSize() {
       const parent = canvas.parentElement;
@@ -223,14 +78,22 @@ export default function ParticleTulipHero() {
       canvas.style.height = h + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      scale = Math.min(w, h) * 0.92;
-      originX = (w - scale) / 2;
-      originY = (h - scale) / 2;
+      const boxW = w * 0.92;
+      const boxH = h * 0.92;
+      if (boxW / boxH > SOURCE_ASPECT) {
+        dispH = boxH;
+        dispW = boxH * SOURCE_ASPECT;
+      } else {
+        dispW = boxW;
+        dispH = boxW / SOURCE_ASPECT;
+      }
+      originX = (w - dispW) / 2;
+      originY = (h - dispH) / 2;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        p.x = originX + p.bx * scale;
-        p.y = originY + p.by * scale;
+        p.x = originX + p.bx * dispW;
+        p.y = originY + p.by * dispH;
       }
     }
 
@@ -238,7 +101,7 @@ export default function ParticleTulipHero() {
     window.addEventListener("resize", layout);
     window.addEventListener("orientationchange", layout);
 
-    // ---------- 4. Pointer interaction (mouse + touch) ----------
+    // ---------- 3. Pointer interaction (mouse + touch) ----------
     const mouse = { x: -9999, y: -9999, active: false };
     let MOUSE_RADIUS = Math.min(window.innerWidth, window.innerHeight) * 0.16;
 
@@ -267,7 +130,7 @@ export default function ParticleTulipHero() {
       window.addEventListener("resize", onResizeRadius);
     }
 
-    // ---------- 5. Animate ----------
+    // ---------- 4. Animate ----------
     const SPRING = 0.055;
     const DAMPING = 0.88;
 
@@ -276,13 +139,12 @@ export default function ParticleTulipHero() {
       const { w, h } = getSize();
       const pushStrength = MOUSE_RADIUS * 0.9;
 
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, w, h);
+      ctx.clearRect(0, 0, w, h);
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        const baseX = originX + p.bx * scale;
-        const baseY = originY + p.by * scale;
+        const baseX = originX + p.bx * dispW;
+        const baseY = originY + p.by * dispH;
 
         let targetX = baseX;
         let targetY = baseY;
@@ -344,7 +206,28 @@ export default function ParticleTulipHero() {
 
   return (
     <div style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", background: "#000" }}>
-      <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%", touchAction: "none" }} />
+      <img
+        src={tulipSourceImg}
+        alt=""
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          maxWidth: "92vw",
+          maxHeight: "92vh",
+          width: "auto",
+          height: "auto",
+          opacity: 0.22,
+          filter: "saturate(0.8) brightness(0.85)",
+          pointerEvents: "none",
+        }}
+      />
+      <canvas
+        ref={canvasRef}
+        style={{ position: "relative", display: "block", width: "100%", height: "100%", touchAction: "none" }}
+      />
     </div>
   );
 }

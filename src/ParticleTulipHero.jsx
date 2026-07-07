@@ -219,8 +219,8 @@ export default function ParticleTulipHero() {
           maxHeight: "92vh",
           width: "auto",
           height: "auto",
-          opacity: 0.22,
-          filter: "saturate(0.8) brightness(0.85)",
+          opacity: 0.5,
+          filter: "saturate(0.9) brightness(1.05)",
           pointerEvents: "none",
         }}
       />

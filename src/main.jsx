@@ -1,9 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import ParticleTulipHero from "./ParticleTulipHero.jsx";
+import ArtLab from "./ArtLab.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ParticleTulipHero />
+    <ArtLab />
   </StrictMode>
 );

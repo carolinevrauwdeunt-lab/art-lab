@@ -4,8 +4,8 @@ import "./artlab.css";
 const LINKS = {
   mail: "mailto:caroline.vrauwdeunt@gmail.com",
   github: "https://github.com/carolinevrauwdeunt-lab",
-  instagram: "#", // TODO: add real Instagram URL
-  linkedin: "#", // TODO: add real LinkedIn URL
+  instagram: "https://www.instagram.com/cvoriginal.photography",
+  linkedin: "https://www.linkedin.com/in/carolinevrauwdeunt",
 };
 
 function Schematic({ nodes, label }) {

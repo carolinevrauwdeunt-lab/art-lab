@@ -230,7 +230,7 @@ export default function ParticleTulipHero() {
       />
       <canvas
         ref={canvasRef}
-        style={{ position: "relative", display: "block", width: "100%", height: "100%", touchAction: "none" }}
+        style={{ position: "relative", display: "block", width: "100%", height: "100%", touchAction: "pan-y" }}
       />
     </div>
   );

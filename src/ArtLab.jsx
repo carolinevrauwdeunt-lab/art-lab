@@ -1,4 +1,5 @@
 import ParticleTulipHero from "./ParticleTulipHero.jsx";
+import WireframeLionPlate from "./WireframeLionPlate.jsx";
 import "./artlab.css";
 
 const LINKS = {
@@ -61,6 +62,19 @@ function PlateArt({ seed }) {
         <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx} ${cy - r}`} />
       </g>
     </svg>
+  );
+}
+
+function LivePlate({ fig, title, medium, children, portrait }) {
+  return (
+    <figure className="plate" style={{ margin: 0 }}>
+      <div className={"plate-frame" + (portrait ? " portrait" : "")}>{children}</div>
+      <figcaption className="plate-caption">
+        <b>FIG. {fig}</b>
+        <span>{title}</span>
+        <span>{medium}</span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -135,7 +149,9 @@ export default function ArtLab() {
       </div>
 
       <section className="plates">
-        <Plate fig="002" title="UNTITLED — IN STUDIO" seed={1} />
+        <LivePlate fig="002" title="LEO &times; TRIANGULATION" medium="162-NODE WIREFRAME MESH" portrait>
+          <WireframeLionPlate />
+        </LivePlate>
         <Plate fig="003" title="UNTITLED — IN STUDIO" seed={2} />
         <Plate fig="004" title="UNTITLED — SKETCH PHASE" seed={3} />
       </section>

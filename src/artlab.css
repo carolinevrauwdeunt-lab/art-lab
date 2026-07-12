@@ -220,6 +220,10 @@ a.node:hover {
   overflow: hidden;
 }
 
+.plate-frame.portrait {
+  aspect-ratio: 3 / 4;
+}
+
 .plate-frame svg {
   position: absolute;
   inset: 0;

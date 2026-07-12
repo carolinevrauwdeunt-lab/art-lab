@@ -152,7 +152,7 @@ export default function ArtLab() {
         <span>SHEET 1 OF 1 &mdash; REVISIONS ONGOING</span>
       </div>
       <p className="gen-note">
-        NOTE &mdash; PLEASE TOUCH THIS ART. USUALLY, YOU CAN&rsquo;T.
+        NOTE &mdash; PLEASE TOUCH THIS ART.
       </p>
 
       <section className="plates">

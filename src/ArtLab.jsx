@@ -1,4 +1,5 @@
 import ParticleTulipHero from "./ParticleTulipHero.jsx";
+import WireframeLionPlate from "./WireframeLionPlate.jsx";
 import "./artlab.css";
 
 const LINKS = {
@@ -64,6 +65,19 @@ function PlateArt({ seed }) {
   );
 }
 
+function LivePlate({ fig, title, medium, children, portrait }) {
+  return (
+    <figure className="plate" style={{ margin: 0 }}>
+      <div className={"plate-frame" + (portrait ? " portrait" : "")}>{children}</div>
+      <figcaption className="plate-caption">
+        <b>FIG. {fig}</b>
+        <span>{title}</span>
+        <span>{medium}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
 function Plate({ fig, title, seed }) {
   return (
     <figure className="plate" style={{ margin: 0 }}>
@@ -114,6 +128,10 @@ export default function ArtLab() {
               <span>SCALE</span>
               <b>1 : 1</b>
             </div>
+            <div>
+              <span>INPUT</span>
+              <b>CURSOR + TOUCH</b>
+            </div>
           </div>
           <div className="scroll-cue">SECTION A&ndash;A</div>
         </div>
@@ -133,9 +151,14 @@ export default function ArtLab() {
         <b>INDEX OF PLATES</b>
         <span>SHEET 1 OF 1 &mdash; REVISIONS ONGOING</span>
       </div>
+      <p className="gen-note">
+        NOTE &mdash; PLEASE TOUCH THIS ART.
+      </p>
 
       <section className="plates">
-        <Plate fig="002" title="UNTITLED — IN STUDIO" seed={1} />
+        <LivePlate fig="002" title="LEO &times; TRIANGULATION" medium="162-NODE WIREFRAME MESH" portrait>
+          <WireframeLionPlate />
+        </LivePlate>
         <Plate fig="003" title="UNTITLED — IN STUDIO" seed={2} />
         <Plate fig="004" title="UNTITLED — SKETCH PHASE" seed={3} />
       </section>

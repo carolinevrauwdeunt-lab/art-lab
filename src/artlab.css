@@ -288,6 +288,16 @@ a.node:hover {
   transform: translateY(-3px);
 }
 
+.gen-note {
+  max-width: 1080px;
+  margin: -24px auto 0;
+  padding: 0 32px 8px;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  line-height: 1.7;
+  color: var(--ink-dim);
+}
+
 .section-head b {
   font-weight: 400;
   color: var(--ink);

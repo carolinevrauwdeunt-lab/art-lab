@@ -128,6 +128,10 @@ export default function ArtLab() {
               <span>SCALE</span>
               <b>1 : 1</b>
             </div>
+            <div>
+              <span>INPUT</span>
+              <b>CURSOR + TOUCH</b>
+            </div>
           </div>
           <div className="scroll-cue">SECTION A&ndash;A</div>
         </div>
@@ -147,6 +151,10 @@ export default function ArtLab() {
         <b>INDEX OF PLATES</b>
         <span>SHEET 1 OF 1 &mdash; REVISIONS ONGOING</span>
       </div>
+      <p className="gen-note">
+        NOTE &mdash; LIVE FIGURES ARE BUILT TO BE HANDLED. MOVE YOUR CURSOR OR A FINGER
+        THROUGH THE FIELD; IT PARTS AND SETTLES BACK.
+      </p>
 
       <section className="plates">
         <LivePlate fig="002" title="LEO &times; TRIANGULATION" medium="162-NODE WIREFRAME MESH" portrait>
